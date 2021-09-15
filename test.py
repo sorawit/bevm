@@ -28,10 +28,11 @@ def main():
         'value': 10**17,
     }, a.key)
     lv = LevelDB('./db/testx.db')
-    db = AtomicDB(lv)
+    # db = AtomicDB(lv)
+    db = AtomicDB()
     cx = ExecutionContext(ZERO_ADDRESS, 1, 1, 1, 0, [], 494)
-    # st = BerlinState(db, cx, BLANK_ROOT_HASH)
-    st = BerlinState(db, cx, b'\xba,&8\xb3\xe2:\x85T\x99\xaa\xf2\x07\xc4M\x96-\xec\xa8\xbbrP\xe4[\xcf\x1d\xc9..jYI')
+    st = BerlinState(db, cx, BLANK_ROOT_HASH)
+    # st = BerlinState(db, cx, b'\xba,&8\xb3\xe2:\x85T\x99\xaa\xf2\x07\xc4M\x96-\xec\xa8\xbbrP\xe4[\xcf\x1d\xc9..jYI')
     tx = BerlinTransactionBuilder.new_transaction(
         nonce=0,
         gas_price=1,
@@ -46,7 +47,8 @@ def main():
     sender = extract_transaction_sender(tx)
     print('0x'+sender.hex())
     st.set_balance(sender, 10**18)
-    st.apply_transaction(tx)
+    comp = st.apply_transaction(tx)
+    print(comp.get_gas_used(), comp.get_gas_remaining(), comp.return_data)
     # print(st.account_exists(B_ADDRESS))
     print(st.get_balance(sender))
     print(st.get_balance(ONE_ADDRESS))
