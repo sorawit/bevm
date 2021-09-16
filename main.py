@@ -1,5 +1,6 @@
 from bevm import BEVM
 from bevm.codec import pack_tx, unpack_tx
+from bevm.tx import build_signed_tx, build_spoof_tx
 from eth_account.account import Account
 from eth._utils.address import generate_contract_address
 
@@ -34,7 +35,7 @@ txs = [{
         'nonce': 0,
         'to': b'',
         'gas': 200000,
-        'gasPrice': 10**9,
+        'gas_price': 10**9,
         'value': 0,
         'v': 28,
         'r': 73055308187715820777495770797145639813982829386239956306302679420640191105825,
@@ -47,7 +48,7 @@ txs = [{
         'nonce': 1,
         'to': generate_contract_address(ADDRESS, 0),
         'gas': 200000,
-        'gasPrice': 10**9,
+        'gas_price': 10**9,
         'value': 0,
         'v': 27,
         'r': 18844848182414713279722883788987374244597365989955746541046388714706669738070,
@@ -64,19 +65,19 @@ def main():
         if kind == 'mint':
             bevm.apply_mint(data['to'], data['value'])
         elif kind == 'tx':
-            bevm.apply_transaction(
-                500, data['nonce'], data['gasPrice'], data['gas'], data['to'],
-                data['value'], data['data'], data['v'], data['r'], data['s'],
-            )
+            bevm.apply_transaction(500, build_signed_tx(**data))
         print(bevm.get_balance(txs[0]['data']['to']))
     print(bevm.try_transaction(
         500,
-        ONE_ADDRESS,
-        0,
-        100000,
-        txs[2]['data']['to'],
-        0,
-        bytes.fromhex('0dbe671f')
+        build_spoof_tx(
+            ONE_ADDRESS,
+            bevm.get_nonce(ONE_ADDRESS),
+            0,
+            100000,
+            txs[2]['data']['to'],
+            0,
+            bytes.fromhex('0dbe671f'),
+        )
     ).output.hex())
     print(len(pack_tx(txs[1]['data'])), pack_tx(txs[1]['data']).hex())
     print('---')

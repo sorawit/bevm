@@ -3,7 +3,6 @@ from eth.db.backends.level import LevelDB
 from eth.db.account import AccountDB
 from eth.db.hash_trie import HashTrie
 from eth.vm.execution_context import ExecutionContext
-from eth.vm.spoof import SpoofTransaction
 from eth.vm.forks.berlin.state import BerlinState
 from eth.vm.forks.berlin.transactions import BerlinTransactionBuilder
 from eth.constants import BLANK_ROOT_HASH
@@ -56,6 +55,11 @@ class BEVM:
         db = AccountDB(self.db, self.state_root)
         return db.get_balance(account)
 
+    def get_nonce(self, account):
+        '''Return the nonce of the given account.'''
+        db = AccountDB(self.db, self.state_root)
+        return db.get_nonce(account)
+
     def apply_min_gas_price(self, min_gas_price):
         '''Perform global min gas price update.'''
         db = HashTrie(self.db)
@@ -72,15 +76,10 @@ class BEVM:
         self._update_state_root(db.make_state_root())
         self._increase_action_count()
 
-    def apply_transaction(self, timestamp, nonce, gas_price, gas, to, value, data, v, r, s):
+    def apply_transaction(self, timestamp, tx):
         '''Apply transaction to the BEVM and update the state root + action count.'''
-        ctx = ExecutionContext(
-            ZERO_ADDRESS, timestamp, self.action_count,
-            0, 0, [], self.chain_id,
-        )
-        tx = BerlinTransactionBuilder.new_transaction(
-            nonce, gas_price, gas, to, value, data, v, r, s,
-        )
+        ctx = ExecutionContext(ZERO_ADDRESS, timestamp, self.action_count, 0, 0, [], self.chain_id)
+        print('ez', tx.hash.hex())
         state = BerlinState(self.db, ctx, self.state_root)
         state.lock_changes()
         # TODO: Check min gas price
@@ -91,19 +90,12 @@ class BEVM:
         self._update_state_root(state.state_root)
         self._increase_action_count()
 
-    def try_transaction(self, timestamp, sender, gas_price, gas, to, value, data):
+    def try_transaction(self, timestamp, unsigned_tx):
         '''Try applying the transaction the BEVM but discard all state changes.'''
-        ctx = ExecutionContext(
-            ZERO_ADDRESS, timestamp, self.action_count,
-            0, 0, [], self.chain_id,
-        )
+        ctx = ExecutionContext(ZERO_ADDRESS, timestamp, self.action_count, 0, 0, [], self.chain_id)
         state = BerlinState(self.db, ctx, self.state_root)
         snapshot = state.snapshot()
         try:
-            nonce = state.get_nonce(sender)
-            tx = SpoofTransaction(BerlinTransactionBuilder.create_unsigned_transaction(
-                nonce=nonce, gas_price=gas_price, gas=gas, to=to, value=value, data=data,
-            ), from_=sender)
-            return state.apply_transaction(tx)
+            return state.apply_transaction(unsigned_tx)
         finally:
             state.revert(snapshot)
