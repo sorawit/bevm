@@ -60,6 +60,16 @@ class BEVM:
         db = AccountDB(self.db, self.state_root)
         return db.get_nonce(account)
 
+    def get_storage_at(self, address, slot):
+        '''Return the storage value at the giveen address + slot.'''
+        db = AccountDB(self.db, self.state_root)
+        return db.get_storage(address, slot)
+
+    def get_code(self, address):
+        '''Return the code at the given address.'''
+        db = AccountDB(self.db, self.state_root)
+        return db.get_code(address)
+
     def apply_min_gas_price(self, min_gas_price):
         '''Perform global min gas price update.'''
         db = HashTrie(self.db)
@@ -79,7 +89,6 @@ class BEVM:
     def apply_transaction(self, timestamp, tx):
         '''Apply transaction to the BEVM and update the state root + action count.'''
         ctx = ExecutionContext(ZERO_ADDRESS, timestamp, self.action_count, 0, 0, [], self.chain_id)
-        print('ez', tx.hash.hex())
         state = BerlinState(self.db, ctx, self.state_root)
         state.lock_changes()
         # TODO: Check min gas price
