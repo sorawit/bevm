@@ -80,6 +80,28 @@ def main():
         )
     ).output.hex())
     print(len(pack_tx(txs[1]['data'])), pack_tx(txs[1]['data']).hex())
+    from bevm.action import TransactionAction, rlp_decode_action
+    print('--')
+    signedtx = build_signed_tx(**txs[2]['data'])
+    tx = TransactionAction(
+        nonce=txs[2]['data']['nonce'],
+        gas_price=txs[2]['data']['gas_price'],
+        gas=txs[2]['data']['gas'],
+        to=txs[2]['data']['to'],
+        value=txs[2]['data']['value'],
+        data=txs[2]['data']['data'],
+        v=txs[2]['data']['v'],
+        r=txs[2]['data']['r'],
+        s=txs[2]['data']['s'],
+    )
+    print(tx)
+    tx2 = rlp_decode_action(tx.rlp_encode())
+    print(tx2)
+    print(tx == tx2)
+    print(signedtx.hash.hex())
+    print(tx.hash().hex())
+    print(len(tx.rlp_encode()))
+    return
     print('---')
     print(txs[2]['data'])
     print(unpack_tx(pack_tx(txs[2]['data'])))

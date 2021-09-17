@@ -3,10 +3,10 @@ from rlp import encode, decode
 from rlp.sedes import big_endian_int
 from eth.vm.forks.berlin.transactions import BerlinTransactionBuilder
 from eth_hash.auto import keccak
-
 from bevm.hashable import Hashable
 
-MAGIC_SIZE = 4
+
+MAGIC_SIZE = 32
 MINT_ACTION_MAGIC = keccak(b'MINT_ACTION')[:MAGIC_SIZE]
 
 
@@ -16,12 +16,12 @@ class MintAction(Hashable):
     value: int
 
     def rlp_encode(self):
-        return MINT_ACTION_MAGIC + encode((self.to, big_endian_int.serialize(self.value)))
+        return encode((self.to, big_endian_int.serialize(self.value))) + MINT_ACTION_MAGIC
 
     @classmethod
     def rlp_decode(cls, data):
-        assert data[:MAGIC_SIZE] == MINT_ACTION_MAGIC
-        (to, value) = decode(data[MAGIC_SIZE:])
+        assert data[-MAGIC_SIZE:] == MINT_ACTION_MAGIC
+        (to, value) = decode(data[:-MAGIC_SIZE])
         return cls(to, big_endian_int.deserialize(value))
 
 
@@ -60,12 +60,12 @@ class TransactionAction(Hashable):
             big_endian_int.serialize(self.r),
             big_endian_int.serialize(self.s),
         ))
-        assert res[:MAGIC_SIZE] not in MAGIC_MAPPING.keys()
+        assert res[-MAGIC_SIZE:] not in MAGIC_MAPPING.keys()
         return res
 
     @classmethod
     def rlp_decode(cls, data):
-        assert data[:MAGIC_SIZE] not in MAGIC_MAPPING.keys()
+        assert data[-MAGIC_SIZE:] not in MAGIC_MAPPING.keys()
         (nonce, gas_price, gas, to, value, data, v, r, s) = decode(data)
         return cls(
             big_endian_int.deserialize(nonce),
@@ -81,5 +81,5 @@ class TransactionAction(Hashable):
 
 
 def rlp_decode_action(data):
-    magic = data[:MAGIC_SIZE]
+    magic = data[-MAGIC_SIZE:]
     return MAGIC_MAPPING.get(magic, TransactionAction).rlp_decode(data)
