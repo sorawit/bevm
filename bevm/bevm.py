@@ -4,13 +4,13 @@ from eth.db.account import AccountDB
 from eth.db.hash_trie import HashTrie
 from eth.vm.execution_context import ExecutionContext
 from eth.vm.forks.berlin.state import BerlinState
-from eth.vm.forks.berlin.transactions import BerlinTransactionBuilder
 from eth.constants import BLANK_ROOT_HASH
 
 
 STATE_ROOT = b'BEVM_STATE_ROOT'
 ACTION_COUNT = b'BEVM_ACTION_COUNT'
 MIN_GAS_PRICE = b'BEVM_MIN_GAS_PRICE'
+
 ZERO_ADDRESS = b'\x00' * 20
 
 
