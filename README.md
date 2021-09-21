@@ -10,7 +10,7 @@ that work with Ethereum will also work similarly on BEVM chains.
 
 ## 💰 Cost to Interact with L1
 
-BEVM is a logical layer of top of L1 (think [Omni](https://www.omnilayer.org/))h -f In order to
+BEVM is a logical layer of top of L1 (think [Omni](https://www.omnilayer.org/)). In order to
 interact with a BEVM chain, a user must send a transaction payload to the Layer-1 blockchain.
 To make the process efficient, users can send over transactions to a dedicated sequencer, who
 collects the transactions and submits them all as a one L1 transaction. Cost per one BEVM
