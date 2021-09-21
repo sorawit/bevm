@@ -6,26 +6,6 @@ from bevm.hashable import Hashable
 
 
 @dataclass
-class BlockMeta(Hashable):
-    action_count: int
-    block_hash: bytes
-
-    def rlp_encode(self):
-        return encode((
-            big_endian_int.serialize(self.action_count),
-            self.block_hash,
-        ))
-
-    @classmethod
-    def rlp_decode(cls, data):
-        (action_count, block_hash) = decode(data)
-        return cls(
-            big_endian_int.deserialize(action_count),
-            block_hash,
-        )
-
-
-@dataclass
 class Block(Hashable):
     timestamp: int
     prev_block_hash: bytes

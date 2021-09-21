@@ -69,14 +69,14 @@ class TransactionAction(Hashable):
         (nonce, gas_price, gas, to, value, data, v, r, s) = decode(data)
         return cls(
             big_endian_int.deserialize(nonce),
+            big_endian_int.deserialize(gas_price),
+            big_endian_int.deserialize(gas),
             to,
             big_endian_int.deserialize(value),
-            big_endian_int.deserialize(gas),
-            big_endian_int.deserialize(gas_price),
+            data,
             big_endian_int.deserialize(v),
             big_endian_int.deserialize(r),
             big_endian_int.deserialize(s),
-            data,
         )
 
 
